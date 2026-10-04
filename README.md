@@ -1,5 +1,9 @@
 # BioTime Open — ZKTeco Attendance Platform
 
+<p align="center">
+  <img src="assets/banner.svg" alt="BioTime Open Banner" width="100%"/>
+</p>
+
 > An open-source, self-hosted alternative to ZKTeco BioTime.
 > Connect any ZKTeco device, process attendance, and push data to any HRM/ERP via a unified webhook/API layer.
 

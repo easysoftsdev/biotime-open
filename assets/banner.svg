@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="55%" style="stop-color:#1e3a5f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    <!-- Accent gradient for title -->
+    <linearGradient id="titleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#38bdf8;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#818cf8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+    </linearGradient>
+    <!-- Glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Subtle grid pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff08" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="320" fill="url(#bg)" rx="12"/>
+
+  <!-- Grid overlay -->
+  <rect width="1280" height="320" fill="url(#grid)" rx="12"/>
+
+  <!-- Decorative circles (background blobs) -->
+  <circle cx="100" cy="60" r="120" fill="#3b82f6" opacity="0.06"/>
+  <circle cx="1180" cy="260" r="140" fill="#6366f1" opacity="0.07"/>
+  <circle cx="640" cy="320" r="160" fill="#0ea5e9" opacity="0.05"/>
+
+  <!-- Left side vertical accent bar -->
+  <rect x="48" y="60" width="4" height="200" rx="2" fill="url(#titleGrad)" opacity="0.9"/>
+
+  <!-- Top-left small dots decoration -->
+  <circle cx="64" cy="52" r="3" fill="#38bdf8" opacity="0.6"/>
+  <circle cx="80" cy="52" r="3" fill="#818cf8" opacity="0.5"/>
+  <circle cx="96" cy="52" r="3" fill="#34d399" opacity="0.4"/>
+
+  <!-- Main title -->
+  <text x="72" y="138"
+    font-family="'Segoe UI', system-ui, -apple-system, sans-serif"
+    font-size="62"
+    font-weight="800"
+    letter-spacing="-1"
+    fill="url(#titleGrad)"
+    filter="url(#glow)">BioTime Open</text>
+
+  <!-- Subtitle -->
+  <text x="74" y="182"
+    font-family="'Segoe UI', system-ui, -apple-system, sans-serif"
+    font-size="22"
+    font-weight="400"
+    fill="#94a3b8"
+    letter-spacing="0.5">Open-source ZKTeco attendance platform · Connect any device · Push to any HRM</text>
+
+  <!-- Divider line -->
+  <line x1="72" y1="205" x2="700" y2="205" stroke="#334155" stroke-width="1"/>
+
+  <!-- Feature pills row -->
+  <!-- Pill 1: ADMS Protocol -->
+  <rect x="72" y="220" width="148" height="32" rx="16" fill="#0ea5e920" stroke="#0ea5e940" stroke-width="1"/>
+  <text x="146" y="241" text-anchor="middle"
+    font-family="'Segoe UI', system-ui, sans-serif"
+    font-size="12" font-weight="600" fill="#38bdf8">⚡ ADMS Protocol</text>
+
+  <!-- Pill 2: All ZKTeco Devices -->
+  <rect x="232" y="220" width="168" height="32" rx="16" fill="#6366f120" stroke="#6366f140" stroke-width="1"/>
+  <text x="316" y="241" text-anchor="middle"
+    font-family="'Segoe UI', system-ui, sans-serif"
+    font-size="12" font-weight="600" fill="#818cf8">🔌 All ZKTeco Devices</text>
+
+  <!-- Pill 3: HRM Push -->
+  <rect x="412" y="220" width="138" height="32" rx="16" fill="#10b98120" stroke="#10b98140" stroke-width="1"/>
+  <text x="481" y="241" text-anchor="middle"
+    font-family="'Segoe UI', system-ui, sans-serif"
+    font-size="12" font-weight="600" fill="#34d399">🔗 HRM Push Layer</text>
+
+  <!-- Pill 4: Self-hosted -->
+  <rect x="562" y="220" width="130" height="32" rx="16" fill="#f59e0b20" stroke="#f59e0b40" stroke-width="1"/>
+  <text x="627" y="241" text-anchor="middle"
+    font-family="'Segoe UI', system-ui, sans-serif"
+    font-size="12" font-weight="600" fill="#fbbf24">🐳 Self-Hosted</text>
+
+  <!-- Pill 5: MIT License -->
+  <rect x="704" y="220" width="120" height="32" rx="16" fill="#ef444420" stroke="#ef444440" stroke-width="1"/>
+  <text x="764" y="241" text-anchor="middle"
+    font-family="'Segoe UI', system-ui, sans-serif"
+    font-size="12" font-weight="600" fill="#f87171">📄 MIT License</text>
+
+  <!-- Right side — tech stack block -->
+  <rect x="920" y="70" width="300" height="180" rx="10" fill="#ffffff05" stroke="#ffffff0d" stroke-width="1"/>
+
+  <text x="1070" y="100" text-anchor="middle"
+    font-family="'Segoe UI', system-ui, sans-serif"
+    font-size="11" font-weight="700" fill="#64748b" letter-spacing="2">BUILT WITH</text>
+
+  <!-- Stack items -->
+  <text x="944" y="128" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="600" fill="#38bdf8">⚙</text>
+  <text x="962" y="128" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" fill="#94a3b8">FastAPI  +  Python</text>
+
+  <text x="944" y="154" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="600" fill="#818cf8">◈</text>
+  <text x="962" y="154" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" fill="#94a3b8">Next.js  +  TypeScript</text>
+
+  <text x="944" y="180" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="600" fill="#34d399">▣</text>
+  <text x="962" y="180" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" fill="#94a3b8">PostgreSQL  +  Redis</text>
+
+  <text x="944" y="206" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="600" fill="#fbbf24">◎</text>
+  <text x="962" y="206" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" fill="#94a3b8">Celery  +  Docker</text>
+
+  <text x="944" y="232" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="600" fill="#f87171">◉</text>
+  <text x="962" y="232" font-family="'Segoe UI', system-ui, sans-serif" font-size="13" fill="#94a3b8">Flutter  +  MinIO</text>
+
+  <!-- Bottom right credit -->
+  <text x="1232" y="300" text-anchor="end"
+    font-family="'Segoe UI', system-ui, sans-serif"
+    font-size="11" fill="#334155">by Abu Bakar Siddique (Shamim) · easysofts.com</text>
+
+  <!-- Bottom left version -->
+  <text x="72" y="300"
+    font-family="'Segoe UI', system-ui, sans-serif"
+    font-size="11" fill="#334155">v1.0  ·  BioTime Open</text>
+</svg>
