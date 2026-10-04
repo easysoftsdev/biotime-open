@@ -26,6 +26,21 @@
 
 1. [What Is This?](#1-what-is-this)
 2. [Feature Parity Checklist](#2-feature-parity-checklist)
+   - [Device Management](#device-management)
+   - [Biometric & Employee Sync](#biometric--employee-sync)
+   - [Attendance Processing](#attendance-processing)
+   - [Shift & Roster](#shift--roster)
+   - [Leave Management](#leave-management)
+   - [Overtime Management](#overtime-management)
+   - [Meeting Management](#meeting-management)
+   - [Payroll Integration](#payroll-integration)
+   - [HRM / ERP Push](#hrm--erp-push-unique-to-biotime-open)
+   - [Access Control](#access-control)
+   - [Visitor Management](#visitor-management)
+   - [Reporting & Analytics](#reporting--analytics)
+   - [Employee Self-Service (ESS)](#employee-self-service-ess)
+   - [Dashboard & Monitoring](#dashboard--monitoring)
+   - [System & Administration](#system--administration)
 3. [Supported ZKTeco Devices](#3-supported-zkteco-devices)
 4. [HRM / ERP Integration](#4-hrm--erp-integration)
 5. [High-Level Architecture](#5-high-level-architecture)
@@ -78,15 +93,24 @@
 - [x] Manual sync trigger with live job status
 - [x] Device-to-device employee transfer
 - [x] Bulk device command dispatch
+- [x] Device connection test (ping from dashboard)
+- [x] Per-device communication protocol selection (ADMS / PUSH SDK / TCP)
+- [x] Device display message push (custom message on screen)
+- [x] Device door relay control (remote unlock)
+- [x] Temperature screening threshold config (for supported devices)
 - [ ] Device firmware OTA update (planned)
 
 ### Biometric & Employee Sync
 - [x] Push employees to device (create / update / delete)
 - [x] Pull biometric templates from device (face, fingerprint, palm)
-- [x] Server-side biometric template storage (encrypted)
+- [x] Server-side biometric template storage (encrypted at rest)
 - [x] Cross-device template replication
 - [x] Card / RFID enrollment sync
 - [x] QR code enrollment sync
+- [x] Password enrollment sync
+- [x] Bulk employee push to all devices
+- [x] Employee photo sync to device
+- [x] Sync status per employee per device
 - [ ] ISO/IEC 19794 template normalization (planned)
 
 ### Attendance Processing
@@ -95,11 +119,20 @@
 - [x] Idempotent deduplication (event fingerprint)
 - [x] Attendance record calculation (late, early leave, overtime, absent)
 - [x] Configurable attendance policies per department
+- [x] Configurable check-in / check-out rules
+- [x] Overtime rules (daily, weekly, pre-approved)
+- [x] Non-scheduled day attendance rules
+- [x] Half-day calculation rules
+- [x] Break time deduction rules
+- [x] Multiple punch handling (first-in / last-out / all punches)
 - [x] Manual punch entry with approval workflow
 - [x] Attendance recalculation on policy change
 - [x] Raw event log — immutable, always rebuildable
 - [x] Work codes / verification type mapping
-- [ ] Geo-fenced mobile punch (planned)
+- [x] Temperature data recording (for supported devices)
+- [x] Mask detection recording (for supported devices)
+- [x] Geo-fenced mobile punch
+- [x] Mobile punch with selfie capture
 
 ### Shift & Roster
 - [x] Flexible shift definitions (fixed, flexible, open)
@@ -107,6 +140,10 @@
 - [x] Individual and bulk roster assignment
 - [x] Holiday calendar (per area, recurring)
 - [x] Cross-midnight shift support
+- [x] Shift swap between employees
+- [x] Shift change request and approval
+- [x] Schedule calendar view (weekly / monthly)
+- [x] Roster import via Excel / CSV
 
 ### Leave Management
 - [x] Configurable leave types with accrual rules
@@ -114,15 +151,38 @@
 - [x] Leave request and multi-level approval workflow
 - [x] Carry-forward and max-balance rules
 - [x] Leave impact on attendance records
-- [ ] Leave accrual on custom schedules (planned)
+- [x] Leave encashment support
+- [x] Probation period leave restrictions
+- [x] Leave calendar view
+- [x] Leave application from mobile app
+- [x] Leave accrual on custom schedules
+- [x] Compensatory / lieu leave generation from overtime
+
+### Overtime Management
+- [x] Overtime request and pre-approval workflow
+- [x] Auto overtime calculation from attendance records
+- [x] Overtime pay code mapping
+- [x] Overtime cap rules (daily / weekly / monthly)
+- [x] Manager overtime approval dashboard
+- [x] Overtime reports per employee / department
+
+### Meeting Management
+- [x] Meeting room booking
+- [x] Meeting attendance via device punch
+- [x] Meeting participants management
+- [x] Meeting report generation
 
 ### Payroll Integration
 - [x] Pay code mapping (regular, overtime, holiday, absent)
 - [x] Employee salary structure
 - [x] Payroll run generation
 - [x] WPS (Wages Protection System) report export
+- [x] SIF file export (UAE / GCC payroll)
 - [x] Push payroll data to HRM via webhook
+- [x] Deduction rules (late deduction, absence deduction)
+- [x] Allowance rules (transport, housing, meal)
 - [ ] Direct bank file generation (planned)
+- [ ] IBAN / WPS bank registration (planned)
 
 ### HRM / ERP Push (unique to BioTime Open)
 - [x] Configurable webhook push per event type
@@ -132,38 +192,94 @@
 - [x] Push audit log (every payload sent, response received)
 - [x] Test push (send sample payload to target HRM)
 - [x] Multi-target push (push same event to multiple HRMs)
+- [x] Pull mode — expose REST endpoints for HRM to fetch from us
+- [x] Webhook signature verification (HMAC)
 - [ ] Native Odoo connector (planned)
 - [ ] Native SAP SuccessFactors connector (planned)
+- [ ] Native Oracle HCM connector (planned)
 
 ### Access Control
 - [x] Access groups and door assignments
 - [x] Time-based access rules
 - [x] Employee access assignment
 - [x] Access event log
+- [x] Anti-passback rules
+- [x] First-person-in rule
+- [x] Multi-person authentication rule
+- [x] Remote door unlock from dashboard
+- [x] Access denial alerts
 
 ### Visitor Management
 - [x] Visitor registration and pre-registration
 - [x] QR-based visitor check-in
 - [x] Visitor access grant to specific devices
 - [x] Host employee notification on visitor arrival
+- [x] Visitor badge printing
+- [x] Visitor photo capture on arrival
+- [x] Visitor blacklist
+- [x] Visitor overstay alert
+- [x] Visitor history report
 
-### Reporting
+### Reporting & Analytics
 - [x] Daily / monthly attendance summary
 - [x] Late and absent reports
 - [x] Overtime reports
 - [x] Leave balance reports
-- [x] Device health and sync status reports
+- [x] Device health and sync health reports
+- [x] HRM push success / failure reports
+- [x] Payroll summary report
+- [x] Department-wise attendance analysis
+- [x] Punch trend charts (daily / weekly / monthly)
+- [x] Employee turnover / absenteeism analytics
+- [x] Custom report builder (select fields, filters, grouping)
 - [x] Export to CSV, Excel, PDF
 - [x] Scheduled report delivery via email
+- [x] Report sharing via link (with expiry)
 
-### System
+### Employee Self-Service (ESS)
+- [x] View own attendance records
+- [x] View own leave balances
+- [x] Submit leave requests
+- [x] Submit manual punch requests
+- [x] Submit shift change / swap requests
+- [x] Download payslip
+- [x] View shift schedule
+- [x] Update profile photo
+- [x] Mobile app (Flutter) with all ESS features
+- [x] Push notifications for approvals / rejections
+
+### Dashboard & Monitoring
+- [x] Live punch feed (WebSocket real-time)
+- [x] Device status map (online / offline / disabled)
+- [x] Today's attendance summary widget
+- [x] Late arrivals widget
+- [x] Absent employees widget
+- [x] Pending approvals widget
+- [x] HRM push health widget
+- [x] Sync job status widget
+- [x] Configurable dashboard widgets
+
+### System & Administration
 - [x] Multi-tenant support (multiple organizations)
 - [x] Role-based access control (Super Admin, HR Admin, Manager, Employee)
+- [x] Custom role permissions
 - [x] Full audit log on all changes
-- [x] REST API with OpenAPI/Swagger docs
+- [x] REST API with OpenAPI / Swagger docs
 - [x] WebSocket real-time live punch feed
 - [x] Two-factor authentication (TOTP)
-- [x] SSO via OAuth2 / SAML (planned)
+- [x] SSO via OAuth2 / SAML
+- [x] Session management (active sessions, force logout)
+- [x] API key management (for integrations)
+- [x] IP whitelist for API access
+- [x] Database backup and restore (manual + scheduled)
+- [x] Data export per tenant (GDPR compliance)
+- [x] System health dashboard (CPU, memory, queue depth)
+- [x] Multi-language UI (Arabic, Urdu, Hindi, Bahasa, French, English)
+- [x] RTL layout support (Arabic, Urdu)
+- [x] Dark mode support
+- [x] Email notification templates (customizable)
+- [x] WhatsApp notification support
+- [x] Firebase push notification support
 - [x] Docker Compose one-command deployment
 - [ ] Kubernetes Helm chart (planned)
 
@@ -175,8 +291,8 @@ All ZKTeco devices that support the **ADMS (Attendance Data Management System)**
 
 ### SpeedFace Series (Face + Palm Recognition)
 
-| Series         | Models                                        | Protocol       |
-|----------------|-----------------------------------------------|----------------|
+| Series         | Models                                        | Protocol        |
+|----------------|-----------------------------------------------|-----------------|
 | V5L Series     | V5L, V5L[QR], V5L[TD], V5L[TI], V5L[QR][TI]  | ADMS + PUSH SDK |
 | V4L Pro Series | V4L Pro, V4L Pro-QR, V4L Pro-RFID             | ADMS + PUSH SDK |
 | V3L Series     | V3L, V3L[QR], V3L[RFID], V3L Lite            | ADMS            |
@@ -185,27 +301,34 @@ All ZKTeco devices that support the **ADMS (Attendance Data Management System)**
 | M1 / M2        | SpeedFace-M1, SpeedFace-M2                    | ADMS            |
 | 7BL            | SpeedFace-7BL                                 | ADMS            |
 
+### SenseFace Series (AI Face + In-Glass Fingerprint)
+
+| Series      | Models                                          | Protocol        |
+|-------------|-------------------------------------------------|-----------------|
+| SenseFace 7 | SenseFace 7, SenseFace 7[TD], SenseFace 7[QR]   | ADMS + PUSH SDK |
+| SenseFace 8 | SenseFace 8, SenseFace 8[TD]                    | ADMS + PUSH SDK |
+
 ### InFace Series (Face Recognition)
 
-| Series   | Models                        | Protocol |
-|----------|-------------------------------|----------|
-| InFace   | InFace 600, 800, 900 Series   | ADMS     |
+| Series | Models                      | Protocol |
+|--------|-----------------------------|----------|
+| InFace | InFace 600, 800, 900 Series | ADMS     |
 
 ### ProFace Series
 
-| Series  | Models                        | Protocol       |
-|---------|-------------------------------|----------------|
-| ProFace | ProFace X, ProFace X[TD]      | ADMS + PUSH SDK |
+| Series  | Models                   | Protocol        |
+|---------|--------------------------|-----------------|
+| ProFace | ProFace X, ProFace X[TD] | ADMS + PUSH SDK |
 
 ### Fingerprint Terminals
 
-| Series       | Models                                                    | Protocol    |
-|--------------|-----------------------------------------------------------|-------------|
-| uFace Series | uFace 800, uFace 202, uFace 4                             | ADMS        |
-| K Series     | K40, K50, K60, K80                                        | ADMS        |
-| F Series     | F18, F19, F21, F22                                        | ADMS        |
-| G Series     | G3, G3 Plus, G4                                           | ADMS        |
-| MB Series    | MB10, MB20, MB40, MB160, MB460, MB1000                    | ADMS        |
+| Series       | Models                                         | Protocol |
+|--------------|------------------------------------------------|----------|
+| uFace Series | uFace 800, uFace 202, uFace 4                  | ADMS     |
+| K Series     | K40, K40 Pro, K50, K60, K80                    | ADMS     |
+| F Series     | F18, F19, F21, F22, F35                        | ADMS     |
+| G Series     | G3, G3 Plus, G4                                | ADMS     |
+| MB Series    | MB10, MB20, MB40, MB160, MB460, MB560-VL, MB1000 | ADMS   |
 
 ### Access Control Panels
 
