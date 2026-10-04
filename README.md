@@ -11,6 +11,17 @@
 
 ---
 
+**Developed by [Abu Bakar Siddique (Shamim)](https://easysofts.com)**
+— Co-Founder & Lead Developer at [EasySofts](https://easysofts.com)
+
+| | |
+|---|---|
+| Mobile | +880 1758-083458 · +880 1966-088782 |
+| Email | [a.bakar87@gmail.com](mailto:a.bakar87@gmail.com) · [dev.easysofts@gmail.com](mailto:dev.easysofts@gmail.com) |
+| Website | [https://easysofts.com](https://easysofts.com) |
+
+---
+
 ## Table of Contents
 
 1. [What Is This?](#1-what-is-this)
@@ -32,7 +43,8 @@
 17. [Environment Variables](#17-environment-variables)
 18. [Project Structure](#18-project-structure)
 19. [Contributing](#19-contributing)
-20. [License](#20-license)
+20. [Author](#20-author)
+21. [License](#21-license)
 
 ---
 
@@ -1508,7 +1520,20 @@ celery -A tasks beat --loglevel=info
 
 ---
 
-## 20. License
+## 20. Author
+
+**Abu Bakar Siddique (Shamim)**
+Co-Founder & Lead Developer — [EasySofts](https://easysofts.com)
+
+| | |
+|---|---|
+| Mobile | +880 1758-083458 · +880 1966-088782 |
+| Email | [a.bakar87@gmail.com](mailto:a.bakar87@gmail.com) · [dev.easysofts@gmail.com](mailto:dev.easysofts@gmail.com) |
+| Website | [https://easysofts.com](https://easysofts.com) |
+
+---
+
+## 21. License
 
 MIT License — see [LICENSE](LICENSE).
 
