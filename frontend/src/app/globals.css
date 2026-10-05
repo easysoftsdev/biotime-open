@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background:    220 20% 7%;
+    --foreground:    215 20% 95%;
+    --card:          220 18% 10%;
+    --card-border:   220 15% 16%;
+    --muted:         220 15% 14%;
+    --muted-fg:      215 15% 55%;
+    --primary:       210 100% 56%;
+    --primary-fg:    0 0% 100%;
+    --accent:        220 15% 16%;
+    --accent-fg:     215 20% 90%;
+    --destructive:   0 72% 51%;
+    --border:        220 15% 16%;
+    --input:         220 15% 14%;
+    --ring:          210 100% 56%;
+    --radius:        0.5rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-slate-600 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-500; }
+}
+
+@layer components {
+  .card {
+    @apply bg-[hsl(var(--card))] border border-[hsl(var(--card-border))] rounded-xl;
+  }
+  .stat-card {
+    @apply card p-5 flex flex-col gap-2;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border;
+  }
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors;
+  }
+  .btn-ghost {
+    @apply hover:bg-slate-800 text-slate-300 hover:text-white px-3 py-2 rounded-lg text-sm transition-colors;
+  }
+  .input {
+    @apply bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded-lg px-3 py-2 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-fg))] focus:outline-none focus:ring-2 focus:ring-blue-500/40 w-full;
+  }
+  .table-row {
+    @apply border-b border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition-colors;
+  }
+}
