@@ -90,6 +90,7 @@ export const attendanceApi = {
   live:          (limit?: number)            => api.get("/attendance/live", { params: { limit } }),
   summary:       (for_date?: string)         => api.get("/attendance/summary", { params: { for_date } }),
   manualPunch:   (data: object)              => api.post("/attendance/manual-punch", data),
+  listManualPunches: (params?: object)       => api.get("/attendance/manual-punch", { params }),
   approvePunch:  (id: string, approve: boolean, reject_reason?: string) =>
     api.put(`/attendance/manual-punch/${id}/approve`, null, { params: { approve, reject_reason } }),
   recalculate:   (data: object)              => api.post("/attendance/recalculate", data),

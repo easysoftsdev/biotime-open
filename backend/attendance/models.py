@@ -37,6 +37,12 @@ class AttendanceStatus(str):
     WEEKEND  = "weekend"
 
 
+# Synthetic device_user_id for admin-approved manual punches — these events
+# carry no device (device_id is NULL) and are tagged with this marker so the
+# engine can flag the resulting record with is_manual.
+MANUAL_PUNCH_DEVICE_USER_ID = "manual"
+
+
 # ─── Raw event (immutable) ────────────────────────────────────
 class DeviceAttendanceEvent(TenantModel):
     __tablename__ = "device_attendance_events"
@@ -44,7 +50,8 @@ class DeviceAttendanceEvent(TenantModel):
         UniqueConstraint("device_id", "event_fingerprint", name="uq_event_fingerprint"),
     )
 
-    device_id:        Mapped[uuid.UUID]   = mapped_column(UUID(as_uuid=True), ForeignKey("devices.id", ondelete="CASCADE"), nullable=False, index=True)
+    # NULL for admin-approved manual punches (no physical device)
+    device_id:        Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("devices.id", ondelete="CASCADE"), nullable=True, index=True)
     device_event_id:  Mapped[str|None]    = mapped_column(String(40),  nullable=True)
     device_user_id:   Mapped[str]         = mapped_column(String(20),  nullable=False, index=True)
     employee_id:      Mapped[uuid.UUID|None] = mapped_column(UUID(as_uuid=True), ForeignKey("employees.id", ondelete="SET NULL"), nullable=True, index=True)

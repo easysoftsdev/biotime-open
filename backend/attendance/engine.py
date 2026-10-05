@@ -12,13 +12,13 @@ Flow:
 import uuid
 from datetime import date, datetime, timedelta, timezone
 
-from sqlalchemy import select
+from sqlalchemy import ColumnElement, literal, or_, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from attendance.models import (
     AttendanceRecord, AttendancePolicy, AttendanceStatus,
-    DeviceAttendanceEvent,
+    DeviceAttendanceEvent, MANUAL_PUNCH_DEVICE_USER_ID,
 )
 from employees.service import get_employee_by_device_uid
 
@@ -28,13 +28,28 @@ async def process_device_events(db: AsyncSession, device_id: uuid.UUID) -> int:
     Process all unprocessed raw events for a device.
     Returns number of attendance records updated.
     """
-    # Fetch unprocessed events for this device
+    return await _process_unprocessed(
+        db, DeviceAttendanceEvent.device_id == device_id
+    )
+
+
+async def process_employee_events(db: AsyncSession, employee_id: uuid.UUID) -> int:
+    """
+    Process all unprocessed raw events for one employee — used for manual
+    punches, which have no device attached.
+    """
+    return await _process_unprocessed(
+        db, DeviceAttendanceEvent.employee_id == employee_id
+    )
+
+
+async def _process_unprocessed(
+    db: AsyncSession, *criteria: ColumnElement[bool]
+) -> int:
+    # Fetch unprocessed events matching the criteria
     result = await db.execute(
         select(DeviceAttendanceEvent)
-        .where(
-            DeviceAttendanceEvent.device_id == device_id,
-            DeviceAttendanceEvent.processed == False,       # noqa: E712
-        )
+        .where(DeviceAttendanceEvent.processed == False, *criteria)  # noqa: E712
         .order_by(DeviceAttendanceEvent.event_time.asc())
     )
     events = list(result.scalars().all())
@@ -89,6 +104,11 @@ async def _calculate_daily_record(
 
     # Sort by time
     events = sorted(events, key=lambda e: e.event_time)
+
+    # Any contributed by an admin-approved manual punch?
+    is_manual = any(
+        e.device_user_id == MANUAL_PUNCH_DEVICE_USER_ID for e in events
+    )
 
     first_in  = events[0].event_time
     last_out  = events[-1].event_time
@@ -151,6 +171,7 @@ async def _calculate_daily_record(
         early_leave_minutes=early_leave_minutes,
         overtime_minutes=overtime_minutes,
         status=status,
+        is_manual=is_manual,
         calculated_at=datetime.now(timezone.utc),
     ).on_conflict_do_update(
         index_elements=["employee_id", "date"],
@@ -162,6 +183,8 @@ async def _calculate_daily_record(
             "early_leave_minutes": early_leave_minutes,
             "overtime_minutes": overtime_minutes,
             "status": status,
+            # sticky: a later device-only batch must not clear the flag
+            "is_manual": or_(AttendanceRecord.is_manual, literal(is_manual)),
             "calculated_at": datetime.now(timezone.utc),
         },
     ).returning(AttendanceRecord)
@@ -242,9 +265,15 @@ async def recalculate_range(
         db.add(e)
     await db.flush()
 
-    # Get unique device ids and reprocess
-    device_ids = {e.device_id for e in events}
+    # Reprocess by device; manual events (no device) by employee
+    device_ids = {e.device_id for e in events if e.device_id is not None}
+    manual_employees = {
+        e.employee_id for e in events
+        if e.device_id is None and e.employee_id is not None
+    }
     total = 0
     for did in device_ids:
         total += await process_device_events(db, did)
+    for eid in manual_employees:
+        total += await process_employee_events(db, eid)
     return total

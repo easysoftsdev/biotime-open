@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, RefreshCcw, Radio } from "lucide-react";
+import { Plus, RefreshCcw, Radio, Check, X } from "lucide-react";
 import { Page } from "@/components/layout/Page";
 import { Table, Thead, Th, Tbody, Tr, Td } from "@/components/ui/Table";
 import { StatusBadge, Badge } from "@/components/ui/Badge";
@@ -14,7 +14,7 @@ import { Field } from "@/components/ui/Field";
 import { toast } from "@/components/ui/Toaster";
 import { attendanceApi, employeesApi } from "@/lib/api";
 import { apiErrorMessage, formatTime, minutesToHHMM, statusColor } from "@/lib/utils";
-import type { AttendanceEvent, AttendanceRecord, Employee, PaginatedResponse } from "@/types";
+import type { AttendanceEvent, AttendanceRecord, Employee, ManualPunch, PaginatedResponse } from "@/types";
 
 const STATUSES = ["present", "absent", "late", "early_leave", "on_leave", "holiday", "half_day", "overtime"];
 
@@ -30,6 +30,8 @@ export default function AttendancePage() {
   const [punch, setPunch] = useState({ employee_id: "", requested_time: "", punch_type: "in", reason: "" });
   const [recalcOpen, setRecalcOpen] = useState(false);
   const [recalc, setRecalc] = useState({ start_date: "", end_date: "" });
+  const [rejectTarget, setRejectTarget] = useState<ManualPunch | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   const records = useQuery({
     queryKey: ["attendance", "records", page, status, range],
@@ -58,6 +60,15 @@ export default function AttendancePage() {
       (await employeesApi.list({ page: 1, page_size: 200 })).data as PaginatedResponse<Employee>,
   });
 
+  const approvals = useQuery({
+    queryKey: ["attendance", "manual-punches"],
+    queryFn: async () =>
+      (await attendanceApi.listManualPunches({ limit: 200 })).data as ManualPunch[],
+    refetchInterval: 30_000,
+  });
+
+  const pendingCount = approvals.data?.filter((p) => p.status === "pending").length ?? 0;
+
   const nameOf = (id: string) => {
     const emp = employees.data?.items.find((e) => e.id === id);
     return emp ? `${emp.first_name} ${emp.last_name}` : id.slice(0, 8);
@@ -75,6 +86,8 @@ export default function AttendancePage() {
       toast("success", "Manual punch submitted for approval");
       setPunchOpen(false);
       setPunch({ employee_id: "", requested_time: "", punch_type: "in", reason: "" });
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      setTab("approvals");
     },
     onError: (err) => toast("error", apiErrorMessage(err)),
   });
@@ -84,6 +97,18 @@ export default function AttendancePage() {
     onSuccess: () => {
       toast("success", "Recalculation queued");
       setRecalcOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+    },
+    onError: (err) => toast("error", apiErrorMessage(err)),
+  });
+
+  const decidePunch = useMutation({
+    mutationFn: ({ id, approve, reason }: { id: string; approve: boolean; reason?: string }) =>
+      attendanceApi.approvePunch(id, approve, reason),
+    onSuccess: (_res, vars) => {
+      toast("success", vars.approve ? "Punch approved" : "Punch request rejected");
+      setRejectTarget(null);
+      setRejectReason("");
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
     },
     onError: (err) => toast("error", apiErrorMessage(err)),
@@ -109,6 +134,7 @@ export default function AttendancePage() {
       <Tabs
         tabs={[
           { key: "records", label: "Records", count: records.data?.total },
+          { key: "approvals", label: "Approvals", count: pendingCount || undefined },
           { key: "live", label: "Live feed", count: live.data?.length },
         ]}
         active={tab}
@@ -221,6 +247,84 @@ export default function AttendancePage() {
             )}
           </div>
         </>
+      ) : tab === "approvals" ? (
+        <div className="card overflow-hidden">
+          {approvals.isLoading ? (
+            <PageSpinner />
+          ) : !approvals.data?.length ? (
+            <EmptyState
+              title="No punch requests"
+              message="Requests submitted with Manual punch appear here for approval."
+            />
+          ) : (
+            <Table>
+              <Thead>
+                <Th>Submitted</Th>
+                <Th>Employee</Th>
+                <Th>Punch time</Th>
+                <Th>Type</Th>
+                <Th>Reason</Th>
+                <Th>Status</Th>
+                <Th className="text-right">Action</Th>
+              </Thead>
+              <Tbody>
+                {approvals.data.map((p) => (
+                  <Tr key={p.id}>
+                    <Td className="text-xs">{formatTime(p.created_at)}</Td>
+                    <Td className="text-sm text-white">{nameOf(p.employee_id)}</Td>
+                    <Td className="text-xs">{formatTime(p.requested_time)}</Td>
+                    <Td className="text-xs">{p.punch_type === "in" ? "Clock in" : "Clock out"}</Td>
+                    <Td className="text-xs text-slate-400">{p.reason || "—"}</Td>
+                    <Td>
+                      <Badge
+                        variant={
+                          p.status === "approved"
+                            ? "success"
+                            : p.status === "rejected"
+                              ? "danger"
+                              : "warning"
+                        }
+                      >
+                        {p.status}
+                      </Badge>
+                      {p.status === "rejected" && p.rejected_reason && (
+                        <span className="ml-1.5 text-[11px] text-slate-500">
+                          {p.rejected_reason}
+                        </span>
+                      )}
+                    </Td>
+                    <Td className="text-right">
+                      {p.status === "pending" ? (
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            className="btn-primary disabled:opacity-50"
+                            disabled={decidePunch.isPending}
+                            onClick={() => decidePunch.mutate({ id: p.id, approve: true })}
+                          >
+                            <Check className="w-3.5 h-3.5 inline mr-1" />
+                            Approve
+                          </button>
+                          <button
+                            className="btn-ghost disabled:opacity-50"
+                            disabled={decidePunch.isPending}
+                            onClick={() => setRejectTarget(p)}
+                          >
+                            <X className="w-3.5 h-3.5 inline mr-1" />
+                            Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-500">
+                          {p.approved_at ? formatTime(p.approved_at) : "—"}
+                        </span>
+                      )}
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          )}
+        </div>
       ) : (
         <div className="card overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-[hsl(var(--border))]">
@@ -336,6 +440,49 @@ export default function AttendancePage() {
             />
           </Field>
         </div>
+      </Modal>
+
+      {/* Reject punch request */}
+      <Modal
+        open={!!rejectTarget}
+        onClose={() => setRejectTarget(null)}
+        title="Reject punch request"
+        description={
+          rejectTarget
+            ? `${nameOf(rejectTarget.employee_id)} · ${formatTime(rejectTarget.requested_time)}`
+            : undefined
+        }
+        size="sm"
+        footer={
+          <>
+            <button className="btn-ghost" onClick={() => setRejectTarget(null)}>
+              Cancel
+            </button>
+            <button
+              className="btn-primary disabled:opacity-50"
+              disabled={decidePunch.isPending || !rejectReason.trim() || !rejectTarget}
+              onClick={() =>
+                rejectTarget &&
+                decidePunch.mutate({
+                  id: rejectTarget.id,
+                  approve: false,
+                  reason: rejectReason.trim(),
+                })
+              }
+            >
+              {decidePunch.isPending ? "Rejecting…" : "Reject"}
+            </button>
+          </>
+        }
+      >
+        <Field label="Reason" required>
+          <input
+            className="input"
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="Outside the approved overtime window"
+          />
+        </Field>
       </Modal>
 
       {/* Recalculate */}

@@ -55,6 +55,20 @@ async def dashboard_summary(
     return await service.get_dashboard_summary(db, current_user.tenant_id, d)
 
 
+@router.get("/manual-punch", response_model=list[schemas.ManualPunchOut])
+async def list_manual_punches(
+    att_status: str | None = Query(None, alias="status"),
+    employee_id: uuid.UUID | None = None,
+    limit: int = Query(100, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """Manual punch requests — pending approvals for the attendance queue."""
+    return await service.list_manual_punches(
+        db, current_user.tenant_id, att_status, employee_id, limit,
+    )
+
+
 @router.post("/manual-punch", response_model=schemas.ManualPunchOut, status_code=status.HTTP_201_CREATED)
 async def create_manual_punch(
     body: schemas.ManualPunchCreate,
@@ -81,6 +95,10 @@ async def approve_manual_punch(
         db, request_id, current_user.id, approve, reject_reason
     )
     await db.commit()
+    if approve:
+        # Enqueue only after the commit so the worker sees the new event
+        from tasks.attendance_tasks import process_raw_events
+        process_raw_events.delay(None, employee_id=str(req.employee_id))
     return req
 
 

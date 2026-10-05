@@ -62,7 +62,7 @@ export interface AttendanceRecord {
 
 export interface AttendanceEvent {
   id: string;
-  device_id: string;
+  device_id: string | null;
   device_user_id: string;
   employee_id: string | null;
   event_time: string;
@@ -174,6 +174,8 @@ export interface ManualPunch {
   status: string;
   approved_by: string | null;
   approved_at: string | null;
+  rejected_reason: string | null;
+  created_at: string;
 }
 
 export interface PayCode {

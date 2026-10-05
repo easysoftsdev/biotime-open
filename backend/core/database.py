@@ -3,7 +3,7 @@ Async SQLAlchemy database engine, session factory, and base model.
 """
 from typing import AsyncGenerator
 
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -84,3 +84,10 @@ async def create_tables():
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # create_all never alters an existing table. Manually relax columns
+        # that models allow to be NULL but older databases still declare
+        # NOT NULL (safe to run repeatedly — a no-op once applied).
+        await conn.execute(text(
+            "ALTER TABLE device_attendance_events "
+            "ALTER COLUMN device_id DROP NOT NULL"
+        ))

@@ -14,7 +14,7 @@ def process_raw_events(self, device_id: str | None, employee_id: str | None = No
     """
     import asyncio
     from core.database import AsyncSessionLocal
-    from attendance.engine import process_device_events
+    from attendance.engine import process_device_events, process_employee_events
 
     async def _run():
         async with AsyncSessionLocal() as db:
@@ -22,6 +22,11 @@ def process_raw_events(self, device_id: str | None, employee_id: str | None = No
                 count = await process_device_events(db, uuid.UUID(device_id))
                 await db.commit()
                 return {"processed": count, "device_id": device_id}
+            if employee_id:
+                # Manual punches are enqueued with no device — process by employee
+                count = await process_employee_events(db, uuid.UUID(employee_id))
+                await db.commit()
+                return {"processed": count, "employee_id": employee_id}
             return {"processed": 0}
 
     try:

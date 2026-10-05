@@ -1,0 +1,70 @@
+# Two-domain layout: one name for the dashboard, one for the API.
+#
+#   biotime.easysofts.net  →  Next.js dashboard
+#   bioapi.easysofts.net   →  FastAPI (REST, WebSocket, ZKTeco /iclock/ push)
+#
+# Copy over the default config:   cp docker/nginx/nginx-domains.conf.example docker/nginx/nginx.conf
+# Then set in .env:
+#   CORS_ORIGINS=https://biotime.easysofts.net
+#   NEXT_PUBLIC_API_URL=https://bioapi.easysofts.net
+#   NEXT_PUBLIC_WS_URL=wss://bioapi.easysofts.net
+# and rebuild:                     docker compose build frontend && docker compose up -d
+#
+# For HTTPS see the "Add HTTPS" section in docs/help.md.
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream api {
+        server api:8000;
+    }
+
+    upstream frontend {
+        server frontend:3000;
+    }
+
+    # ─── API domain: REST, WebSocket, ZKTeco ADMS push ─────────
+    server {
+        listen 80;
+        server_name bioapi.easysofts.net;
+
+        client_max_body_size 50M;
+
+        location / {
+            proxy_pass http://api;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # WebSocket (live punch feed + device status)
+        location /ws/ {
+            proxy_pass http://api;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_read_timeout 86400;
+        }
+    }
+
+    # ─── Dashboard domain: Next.js ─────────────────────────────
+    server {
+        listen 80;
+        server_name biotime.easysofts.net;
+
+        client_max_body_size 50M;
+
+        location / {
+            proxy_pass http://frontend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}

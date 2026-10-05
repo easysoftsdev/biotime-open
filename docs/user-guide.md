@@ -402,5 +402,7 @@ Both require the JWT (query param `?token=…`).
 
 - [Help & Troubleshooting](help.md) — connection issues, error table, known
   limitations.
+- [Run it on your own domain](help.md#8-running-on-your-own-domain) — DNS,
+  `biotime.` + `bioapi.` subdomains, HTTPS, pointing terminals at the API host.
 - [README](../README.md) — architecture, supported devices, environment
   variables, Docker quickstart.

@@ -6,9 +6,10 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from attendance.models import (
-    AttendanceRecord, DeviceAttendanceEvent, ManualPunchRequest
+    AttendanceRecord, DeviceAttendanceEvent, ManualPunchRequest,
+    MANUAL_PUNCH_DEVICE_USER_ID,
 )
-from core.exceptions import NotFoundError
+from core.exceptions import ConflictError, NotFoundError
 
 
 async def list_records(
@@ -52,6 +53,26 @@ async def get_live_events(
     return list(result.scalars().all())
 
 
+async def list_manual_punches(
+    db: AsyncSession,
+    tenant_id: uuid.UUID,
+    status: str | None = None,
+    employee_id: uuid.UUID | None = None,
+    limit: int = 100,
+) -> list[ManualPunchRequest]:
+    """Manual punch requests — newest first, optionally filtered."""
+    q = select(ManualPunchRequest).where(
+        ManualPunchRequest.tenant_id == tenant_id
+    )
+    if status:
+        q = q.where(ManualPunchRequest.status == status)
+    if employee_id:
+        q = q.where(ManualPunchRequest.employee_id == employee_id)
+    q = q.order_by(ManualPunchRequest.created_at.desc()).limit(limit)
+    result = await db.execute(q)
+    return list(result.scalars().all())
+
+
 async def create_manual_punch(
     db: AsyncSession,
     tenant_id: uuid.UUID,
@@ -85,6 +106,8 @@ async def approve_manual_punch(
     req = result.scalar_one_or_none()
     if not req:
         raise NotFoundError("Manual punch request not found")
+    if req.status != "pending":
+        raise ConflictError(f"Manual punch request already {req.status}")
     req.status = "approved" if approve else "rejected"
     req.approved_by = approver_id
     req.approved_at = datetime.now(timezone.utc)
@@ -92,26 +115,38 @@ async def approve_manual_punch(
     db.add(req)
     await db.flush()
 
-    # If approved — inject a raw event
+    # If approved — inject a raw event (device_id stays NULL: no physical device)
     if approve:
         from devices.adms.handler import _fingerprint
-        from attendance.models import DeviceAttendanceEvent
-        fp = _fingerprint("manual", str(req.employee_id), str(req.requested_time))
-        from sqlalchemy.dialects.postgresql import insert as pg_insert
-        stmt = pg_insert(DeviceAttendanceEvent).values(
-            tenant_id=req.tenant_id,
-            device_id=None,
-            device_user_id="manual",
-            employee_id=req.employee_id,
-            event_time=req.requested_time,
-            verify_state=0 if req.punch_type == "in" else 1,
-            event_fingerprint=fp,
-            is_manual=True,
-        ).on_conflict_do_nothing()
-        await db.execute(stmt)
-        # Trigger recalculation
-        from tasks.attendance_tasks import process_raw_events
-        process_raw_events.delay(None, employee_id=str(req.employee_id))
+
+        fp = _fingerprint(
+            MANUAL_PUNCH_DEVICE_USER_ID, str(req.employee_id), str(req.requested_time)
+        )
+        existing = await db.execute(
+            select(DeviceAttendanceEvent.id).where(
+                DeviceAttendanceEvent.tenant_id == req.tenant_id,
+                DeviceAttendanceEvent.event_fingerprint == fp,
+            )
+        )
+        if not existing.scalar_one_or_none():
+            db.add(
+                DeviceAttendanceEvent(
+                    tenant_id=req.tenant_id,
+                    device_id=None,
+                    device_user_id=MANUAL_PUNCH_DEVICE_USER_ID,
+                    employee_id=req.employee_id,
+                    event_time=req.requested_time,
+                    event_time_local=req.requested_time,
+                    verify_state=0 if req.punch_type == "in" else 1,
+                    event_fingerprint=fp,
+                    raw_payload={
+                        "source": "manual_punch",
+                        "request_id": str(req.id),
+                        "approved_by": str(approver_id),
+                    },
+                )
+            )
+            await db.flush()
 
     return req
 

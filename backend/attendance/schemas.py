@@ -24,7 +24,7 @@ class AttendanceRecordOut(BaseModel):
 
 class AttendanceEventOut(BaseModel):
     id: uuid.UUID
-    device_id: uuid.UUID
+    device_id: uuid.UUID | None
     device_user_id: str
     employee_id: uuid.UUID | None
     event_time: datetime
@@ -52,6 +52,8 @@ class ManualPunchOut(BaseModel):
     status: str
     approved_by: uuid.UUID | None
     approved_at: datetime | None
+    rejected_reason: str | None = None
+    created_at: datetime
     model_config = {"from_attributes": True}
 
 
