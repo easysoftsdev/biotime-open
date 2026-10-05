@@ -2,7 +2,7 @@
 Shift & Roster domain models.
 """
 import uuid
-from datetime import time
+from datetime import time, date
 
 from sqlalchemy import Boolean, Date, ForeignKey, Integer, String, Time
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -48,8 +48,8 @@ class Roster(TenantModel):
     employee_id:   Mapped[uuid.UUID]      = mapped_column(UUID(as_uuid=True), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
     shift_id:      Mapped[uuid.UUID|None] = mapped_column(UUID(as_uuid=True), ForeignKey("shifts.id",    ondelete="SET NULL"), nullable=True)
     cycle_id:      Mapped[uuid.UUID|None] = mapped_column(UUID(as_uuid=True), ForeignKey("shift_cycles.id", ondelete="SET NULL"), nullable=True)
-    effective_from:Mapped[Date]           = mapped_column(Date, nullable=False)
-    effective_to:  Mapped[Date|None]      = mapped_column(Date, nullable=True)
+    effective_from:Mapped[date]           = mapped_column(Date, nullable=False)
+    effective_to:  Mapped[date | None]      = mapped_column(Date, nullable=True)
     assigned_by:   Mapped[uuid.UUID|None] = mapped_column(UUID(as_uuid=True), nullable=True)
 
     shift: Mapped["Shift|None"] = relationship(back_populates="rosters")
@@ -59,7 +59,7 @@ class Holiday(TenantModel):
     __tablename__ = "holidays"
 
     name:      Mapped[str]          = mapped_column(String(120), nullable=False)
-    date:      Mapped[Date]         = mapped_column(Date, nullable=False, index=True)
+    date:      Mapped[date]         = mapped_column(Date, nullable=False, index=True)
     area_id:   Mapped[uuid.UUID|None] = mapped_column(UUID(as_uuid=True), ForeignKey("areas.id", ondelete="SET NULL"), nullable=True)
     is_paid:   Mapped[bool]         = mapped_column(Boolean, default=True)
     recurring: Mapped[bool]         = mapped_column(Boolean, default=False)

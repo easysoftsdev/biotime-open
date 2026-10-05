@@ -7,6 +7,12 @@ Usage:
 import asyncio
 import sys
 
+from core.database import load_models
+
+# Make sure every table (and its foreign keys) is registered before any
+# command touches the database.
+load_models()
+
 
 async def seed():
     from core.database import AsyncSessionLocal

@@ -1,8 +1,10 @@
 """Leave domain models."""
 import uuid
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import datetime, date
+
 from core.models import TenantModel
 
 
@@ -36,15 +38,15 @@ class LeaveRequest(TenantModel):
 
     employee_id:        Mapped[uuid.UUID]      = mapped_column(UUID(as_uuid=True), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
     leave_type_id:      Mapped[uuid.UUID]      = mapped_column(UUID(as_uuid=True), ForeignKey("leave_types.id"), nullable=False)
-    start_date:         Mapped[Date]           = mapped_column(Date, nullable=False)
-    end_date:           Mapped[Date]           = mapped_column(Date, nullable=False)
+    start_date:         Mapped[date]           = mapped_column(Date, nullable=False)
+    end_date:           Mapped[date]           = mapped_column(Date, nullable=False)
     days:               Mapped[float]          = mapped_column(Numeric(5,1), nullable=False)
     reason:             Mapped[str|None]       = mapped_column(Text, nullable=True)
     status:             Mapped[str]            = mapped_column(String(20), default="pending")
     current_approver_id:Mapped[uuid.UUID|None] = mapped_column(UUID(as_uuid=True), nullable=True)
     approval_level:     Mapped[int]            = mapped_column(Integer, default=1)
     approved_by:        Mapped[uuid.UUID|None] = mapped_column(UUID(as_uuid=True), nullable=True)
-    approved_at:        Mapped[DateTime|None]  = mapped_column(DateTime(timezone=True), nullable=True)
+    approved_at:        Mapped[datetime | None]  = mapped_column(DateTime(timezone=True), nullable=True)
     rejection_reason:   Mapped[str|None]       = mapped_column(Text, nullable=True)
 
     leave_type: Mapped["LeaveType"] = relationship()

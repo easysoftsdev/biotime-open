@@ -8,6 +8,7 @@ Logs every attempt to push_logs.
 import time
 import uuid
 from datetime import datetime, timezone, timedelta
+from typing import Any
 
 import httpx
 
@@ -116,7 +117,7 @@ def _apply_field_map(payload: dict, field_map: dict) -> dict:
     if not field_map:
         return payload
 
-    result = {}
+    result: dict[str, Any] = {}
     for src_key, dst_key in field_map.items():
         if src_key in payload:
             _set_nested(result, dst_key, payload[src_key])

@@ -146,6 +146,87 @@ export interface DashboardSummary {
   late: number;
 }
 
+export interface Holiday {
+  id: string;
+  name: string;
+  date: string;
+  area_id: string | null;
+  is_paid: boolean;
+  recurring: boolean;
+}
+
+export interface LeaveBalance {
+  id: string;
+  employee_id: string;
+  leave_type_id: string;
+  balance: number;
+  used: number;
+  accrued: number;
+  year: number;
+}
+
+export interface ManualPunch {
+  id: string;
+  employee_id: string;
+  requested_time: string;
+  punch_type: string;
+  reason: string | null;
+  status: string;
+  approved_by: string | null;
+  approved_at: string | null;
+}
+
+export interface PayCode {
+  id: string;
+  code: string;
+  name: string;
+  type: string;
+  rate_type: string;
+  rate: number;
+  taxable: boolean;
+}
+
+export interface PayrollRun {
+  id: string;
+  period_start: string;
+  period_end: string;
+  status: string;
+  created_at: string;
+  notes: string | null;
+}
+
+export interface PayrollItem {
+  id: string;
+  employee_id: string;
+  pay_code_id: string;
+  amount: number;
+  hours: number;
+  notes: string | null;
+}
+
+export interface PushJob {
+  id: string;
+  target_id: string;
+  event_type: string;
+  employee_id: string | null;
+  status: string;
+  attempts: number;
+  error: string | null;
+  next_retry_at: string | null;
+  created_at: string;
+}
+
+export interface PushLog {
+  id: string;
+  event_type: string;
+  employee_id: string | null;
+  response_status: number | null;
+  attempt_number: number;
+  sent_at: string | null;
+  duration_ms: number;
+  success: boolean;
+}
+
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;

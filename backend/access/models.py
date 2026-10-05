@@ -1,8 +1,10 @@
 """Access control models."""
 import uuid
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, String
+from sqlalchemy import Date, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
+from datetime import date
+
 from core.models import TenantModel
 
 
@@ -18,5 +20,5 @@ class EmployeeAccess(TenantModel):
     __tablename__ = "employee_access"
     employee_id:     Mapped[uuid.UUID]      = mapped_column(UUID(as_uuid=True), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
     access_group_id: Mapped[uuid.UUID]      = mapped_column(UUID(as_uuid=True), ForeignKey("access_groups.id", ondelete="CASCADE"), nullable=False)
-    valid_from:      Mapped[Date|None]      = mapped_column(Date, nullable=True)
-    valid_to:        Mapped[Date|None]      = mapped_column(Date, nullable=True)
+    valid_from:      Mapped[date | None]      = mapped_column(Date, nullable=True)
+    valid_to:        Mapped[date | None]      = mapped_column(Date, nullable=True)

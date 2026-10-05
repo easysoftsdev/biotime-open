@@ -6,8 +6,10 @@ import uuid
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import PlainTextResponse
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.auth.models import Tenant
 from core.database import get_db
 from devices.adms.handler import (
     handle_attendance_upload,
@@ -24,12 +26,27 @@ router = APIRouter()
 DEFAULT_TENANT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
 
-def _get_tenant_id(request: Request) -> uuid.UUID:
+async def _get_tenant_id(db: AsyncSession) -> uuid.UUID:
     """
-    Resolve tenant from request.
-    For now uses a default; extend to map by IP or serial prefix.
+    Resolve the tenant a device belongs to.
+    Prefers the seeded "default" tenant, creating it when absent.
+    Extend to map by source IP or serial prefix for multi-tenant fleets.
     """
-    return DEFAULT_TENANT_ID
+    result = await db.execute(
+        select(Tenant).where(Tenant.slug == "default").limit(1)
+    )
+    tenant = result.scalar_one_or_none()
+    if tenant:
+        return tenant.id
+
+    tenant = Tenant(
+        id=DEFAULT_TENANT_ID,
+        name="Default Organization",
+        slug="default",
+    )
+    db.add(tenant)
+    await db.flush()
+    return tenant.id
 
 
 @router.get("/cdata", response_class=PlainTextResponse)
@@ -47,7 +64,7 @@ async def adms_handshake(
     firmware = params.get("Pushver") or params.get("FWVersion") or params.get("Ver")
     model    = params.get("DeviceModel") or params.get("Model")
     language = params.get("Language")
-    tenant_id = _get_tenant_id(request)
+    tenant_id = await _get_tenant_id(db)
 
     response = await handle_handshake(db, SN, firmware, model, language, tenant_id)
     return PlainTextResponse(content=response)
@@ -66,7 +83,7 @@ async def adms_upload(
     """
     body = await request.body()
     raw = body.decode("utf-8", errors="replace")
-    tenant_id = _get_tenant_id(request)
+    tenant_id = await _get_tenant_id(db)
 
     result = await handle_attendance_upload(db, SN, raw, tenant_id)
     return PlainTextResponse(content=f"OK: {result['inserted']} new records")

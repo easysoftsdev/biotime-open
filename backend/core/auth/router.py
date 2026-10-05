@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.auth import schemas, service
 from core.database import get_db
-from core.deps import CurrentUser
+from core.deps import get_current_user
 from core.exceptions import UnauthorizedError
 from core.security import (
     create_access_token,
@@ -31,7 +31,7 @@ async def login(
     if user.totp_enabled:
         if not body.totp_code:
             raise UnauthorizedError("TOTP code required")
-        if not verify_totp(user.totp_secret, body.totp_code):
+        if not user.totp_secret or not verify_totp(user.totp_secret, body.totp_code):
             raise UnauthorizedError("Invalid TOTP code")
 
     extra = {"role": user.role, "tenant_id": str(user.tenant_id)}
@@ -67,21 +67,21 @@ async def refresh(
 
 
 @router.get("/me", response_model=schemas.UserOut)
-async def me(current_user=Depends(CurrentUser)):  # type: ignore[valid-type]
+async def me(current_user=Depends(get_current_user)):
     return current_user
 
 
 @router.post("/change-password", status_code=204)
 async def change_password(
     body: schemas.ChangePasswordRequest,
-    current_user=Depends(CurrentUser),  # type: ignore[valid-type]
+    current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     await service.change_password(db, current_user, body.current_password, body.new_password)
 
 
 @router.post("/totp/setup", response_model=schemas.TOTPSetupResponse)
-async def totp_setup(current_user=Depends(CurrentUser)):  # type: ignore[valid-type]
+async def totp_setup(current_user=Depends(get_current_user)):
     secret = generate_totp_secret()
     uri = get_totp_uri(secret, current_user.email)
     # Secret is not saved yet — user must verify first
@@ -91,11 +91,18 @@ async def totp_setup(current_user=Depends(CurrentUser)):  # type: ignore[valid-t
 @router.post("/totp/verify", status_code=204)
 async def totp_verify(
     body: schemas.TOTPVerifyRequest,
-    current_user=Depends(CurrentUser),  # type: ignore[valid-type]
+    current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Verify TOTP code and activate 2FA for the user."""
-    if not verify_totp(body.secret if hasattr(body, "secret") else current_user.totp_secret, body.code):
+    secret = body.secret or current_user.totp_secret
+    if not secret:
+        raise UnauthorizedError("Run TOTP setup first")
+    if not verify_totp(secret, body.code):
         raise UnauthorizedError("Invalid TOTP code")
+
+    current_user.totp_secret = secret
     current_user.totp_enabled = True
     db.add(current_user)
+    await db.commit()
+    return None

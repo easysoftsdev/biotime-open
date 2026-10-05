@@ -1,10 +1,22 @@
 """
 Application settings — loaded from environment variables / .env file.
 """
+import json
 from functools import lru_cache
 from typing import List
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _split_list(raw: str) -> List[str]:
+    """Parse `a,b,c` (documented format) or a JSON array into a list."""
+    text = raw.strip()
+    if not text:
+        return []
+    if text.startswith("["):
+        parsed = json.loads(text)
+        return [str(item).strip() for item in parsed if str(item).strip()]
+    return [item.strip() for item in text.split(",") if item.strip()]
 
 
 class Settings(BaseSettings):
@@ -18,8 +30,8 @@ class Settings(BaseSettings):
     # ─── App ──────────────────────────────────────────────────
     SECRET_KEY: str = "change-me"
     DEBUG: bool = False
-    ALLOWED_HOSTS: List[str] = ["localhost", "127.0.0.1"]
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    ALLOWED_HOSTS: str = "localhost,127.0.0.1"
+    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     # ─── Database ─────────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://biotime:biotime@localhost:5432/biotime"
@@ -65,6 +77,15 @@ class Settings(BaseSettings):
 
     # ─── Monitoring ───────────────────────────────────────────
     SENTRY_DSN: str = ""
+
+    # ─── Parsed helpers (env values are comma-separated) ─────
+    @property
+    def allowed_hosts(self) -> List[str]:
+        return _split_list(self.ALLOWED_HOSTS)
+
+    @property
+    def cors_origins(self) -> List[str]:
+        return _split_list(self.CORS_ORIGINS)
 
 
 @lru_cache

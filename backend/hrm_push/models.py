@@ -3,6 +3,8 @@ import uuid
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import datetime
+
 from core.models import TenantModel
 
 
@@ -35,7 +37,7 @@ class HRMPushJob(TenantModel):
     payload:      Mapped[dict]           = mapped_column(JSONB, default=dict)
     status:       Mapped[str]            = mapped_column(String(20), default="queued")  # queued/sent/failed/retrying
     attempts:     Mapped[int]            = mapped_column(Integer, default=0)
-    next_retry_at:Mapped[DateTime|None]  = mapped_column(DateTime(timezone=True), nullable=True)
+    next_retry_at:Mapped[datetime | None]  = mapped_column(DateTime(timezone=True), nullable=True)
     error:        Mapped[str|None]       = mapped_column(Text, nullable=True)
 
     target: Mapped["HRMPushTarget"] = relationship(back_populates="jobs")
@@ -54,7 +56,7 @@ class PushLog(TenantModel):
     response_status: Mapped[int|None]        = mapped_column(Integer, nullable=True)
     response_body:   Mapped[str|None]        = mapped_column(Text, nullable=True)
     attempt_number:  Mapped[int]             = mapped_column(Integer, default=1)
-    sent_at:         Mapped[DateTime|None]   = mapped_column(DateTime(timezone=True), nullable=True)
+    sent_at:         Mapped[datetime | None]   = mapped_column(DateTime(timezone=True), nullable=True)
     duration_ms:     Mapped[int]             = mapped_column(Integer, default=0)
     success:         Mapped[bool]            = mapped_column(Boolean, default=False)
 

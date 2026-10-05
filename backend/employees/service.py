@@ -5,8 +5,8 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from core.exceptions import ConflictError, NotFoundError
-from employees.models import Employee, EmployeeBiometric
+from core.exceptions import ConflictError
+from employees.models import Employee
 
 
 async def list_employees(

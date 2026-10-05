@@ -5,7 +5,9 @@ import uuid
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
+
+from datetime import datetime
 
 from core.models import TenantModel
 
@@ -28,8 +30,8 @@ class SyncJob(TenantModel):
     type: Mapped[str]   = mapped_column(String(40), default="attendance")
     status: Mapped[str] = mapped_column(String(30), default="queued", index=True)
 
-    started_at: Mapped[DateTime | None]   = mapped_column(DateTime(timezone=True), nullable=True)
-    completed_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None]   = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     records_received: Mapped[int]  = mapped_column(Integer, default=0)
     records_inserted: Mapped[int]  = mapped_column(Integer, default=0)

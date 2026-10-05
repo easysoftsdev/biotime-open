@@ -4,9 +4,11 @@ Employee domain models.
 import uuid
 from enum import Enum as PyEnum
 
-from sqlalchemy import Boolean, Date, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import ARRAY, BYTEA, UUID
+from sqlalchemy import Date, ForeignKey, String
+from sqlalchemy.dialects.postgresql import BYTEA, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from datetime import date
 
 from core.models import TenantModel
 
@@ -64,7 +66,7 @@ class Employee(TenantModel):
     email:         Mapped[str|None]       = mapped_column(String(255), nullable=True)
     phone:         Mapped[str|None]       = mapped_column(String(40),  nullable=True)
     status:        Mapped[str]            = mapped_column(String(20),  default=EmployeeStatus.ACTIVE)
-    hire_date:     Mapped[Date|None]      = mapped_column(Date,        nullable=True)
+    hire_date:     Mapped[date | None]      = mapped_column(Date,        nullable=True)
     photo_url:     Mapped[str|None]       = mapped_column(String(500), nullable=True)
 
     department_id: Mapped[uuid.UUID|None] = mapped_column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=True)

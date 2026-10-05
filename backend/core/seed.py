@@ -2,6 +2,7 @@
 Seed initial data — device models registry + first admin user.
 """
 import uuid
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +12,7 @@ from core.config import settings
 from core.security import hash_password
 
 
-DEVICE_MODELS = [
+DEVICE_MODELS: list[dict[str, Any]] = [
     # SpeedFace V5L Series
     {"series": "SpeedFace-V5L", "model_code": "V5L",         "display_name": "SpeedFace-V5L",         "adms": True, "push_sdk": True,  "tcp": False},
     {"series": "SpeedFace-V5L", "model_code": "V5L[QR]",     "display_name": "SpeedFace-V5L[QR]",     "adms": True, "push_sdk": True,  "tcp": False},
@@ -63,7 +64,6 @@ async def run_seed(db: AsyncSession) -> None:
 
 
 async def _seed_tenant_and_admin(db: AsyncSession) -> None:
-    from core.auth.models import Tenant, User
 
     # Create default tenant
     result = await db.execute(select(Tenant).where(Tenant.slug == "default"))

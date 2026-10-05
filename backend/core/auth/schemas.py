@@ -1,6 +1,8 @@
 """
 Auth request / response schemas.
 """
+import uuid
+
 from pydantic import BaseModel, EmailStr
 
 
@@ -23,10 +25,10 @@ class RefreshRequest(BaseModel):
 
 
 class UserOut(BaseModel):
-    id: str
+    id: uuid.UUID
     email: str
     role: str
-    tenant_id: str
+    tenant_id: uuid.UUID
     is_active: bool
     totp_enabled: bool
 
@@ -45,3 +47,4 @@ class TOTPSetupResponse(BaseModel):
 
 class TOTPVerifyRequest(BaseModel):
     code: str
+    secret: str | None = None

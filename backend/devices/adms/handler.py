@@ -13,12 +13,10 @@ Reference: ZKTeco ADMS Communication Protocol v2.2
 import hashlib
 import uuid
 from datetime import datetime, timezone
-from typing import Any
 from urllib.parse import parse_qs
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from devices.models import DeviceStatus
 from devices.service import (
     create_device,
     get_device_by_serial,
@@ -116,7 +114,7 @@ async def handle_attendance_upload(
 
     await update_device_heartbeat(db, device)
 
-    lines = [l.strip() for l in raw_body.splitlines() if l.strip()]
+    lines = [raw.strip() for raw in raw_body.splitlines() if raw.strip()]
     received = 0
     inserted = 0
 
@@ -275,12 +273,15 @@ async def handle_device_cmd(
         # Find command by short ID prefix
         from sqlalchemy import select
         from devices.models import DeviceCommand
+
+        device = await get_device_by_serial(db, serial_number)
+        if not device:
+            return "ID=0&Return=9"
+
         result = await db.execute(
-            select(DeviceCommand).where(
-                DeviceCommand.device_id == (
-                    await get_device_by_serial(db, serial_number)
-                ).id
-            ).where(DeviceCommand.status == "sent")
+            select(DeviceCommand)
+            .where(DeviceCommand.device_id == device.id)
+            .where(DeviceCommand.status == "sent")
             .order_by(DeviceCommand.created_at.asc())
             .limit(1)
         )

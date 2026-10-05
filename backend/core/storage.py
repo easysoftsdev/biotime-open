@@ -1,7 +1,6 @@
 """
 MinIO / S3 file storage helper.
 """
-import io
 from typing import BinaryIO
 
 from minio import Minio

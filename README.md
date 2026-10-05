@@ -1538,6 +1538,13 @@ Server Path:     /iclock/
 
 The device will auto-register on first connect.
 
+### 8. Read the guides
+
+| Guide | What's inside |
+|---|---|
+| [User Guide](docs/user-guide.md) | Step-by-step walkthrough of every dashboard page, plus a month-end workflow |
+| [Help & Troubleshooting](docs/help.md) | Device IP question, offline/missed-punch recovery, symptom → fix table, known limitations |
+
 ---
 
 ## 17. Environment Variables

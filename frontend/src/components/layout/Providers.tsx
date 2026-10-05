@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { AuthContext, useAuthProvider } from "@/store/auth";
+import { Toaster } from "@/components/ui/Toaster";
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const auth = useAuthProvider();
@@ -25,6 +26,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>{children}</AuthProvider>
+      <Toaster />
     </QueryClientProvider>
   );
 }

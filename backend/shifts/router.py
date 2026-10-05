@@ -121,3 +121,33 @@ async def create_holiday(
     db.add(holiday)
     await db.commit()
     return holiday
+
+
+@router.patch("/holidays/{holiday_id}", response_model=schemas.HolidayOut)
+async def update_holiday(
+    holiday_id: uuid.UUID,
+    body: schemas.HolidayCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    holiday = await db.get(Holiday, holiday_id)
+    if not holiday or holiday.tenant_id != current_user.tenant_id:
+        raise NotFoundError("Holiday not found")
+    for field, val in body.model_dump().items():
+        setattr(holiday, field, val)
+    db.add(holiday)
+    await db.commit()
+    return holiday
+
+
+@router.delete("/holidays/{holiday_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_holiday(
+    holiday_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    holiday = await db.get(Holiday, holiday_id)
+    if not holiday or holiday.tenant_id != current_user.tenant_id:
+        raise NotFoundError("Holiday not found")
+    await db.delete(holiday)
+    await db.commit()

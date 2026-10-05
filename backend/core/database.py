@@ -59,9 +59,12 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-# ─── Create tables (used in lifespan) ─────────────────────────
-async def create_tables():
-    # Import all models so Base.metadata knows about them
+# ─── Model registry ───────────────────────────────────────────
+def load_models() -> None:
+    """
+    Import every model module so Base.metadata (and all cross-table
+    foreign keys) are resolvable. Safe to call repeatedly.
+    """
     import devices.models       # noqa: F401
     import employees.models     # noqa: F401
     import attendance.models    # noqa: F401
@@ -73,6 +76,11 @@ async def create_tables():
     import visitors.models      # noqa: F401
     import sync.models          # noqa: F401
     import core.auth.models     # noqa: F401
+
+
+# ─── Create tables (used in lifespan) ─────────────────────────
+async def create_tables():
+    load_models()
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

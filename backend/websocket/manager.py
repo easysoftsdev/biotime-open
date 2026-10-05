@@ -3,8 +3,6 @@ WebSocket connection manager.
 Broadcasts real-time punch events to all connected dashboard clients.
 """
 import json
-import uuid
-from typing import dict as Dict
 
 from fastapi import WebSocket
 

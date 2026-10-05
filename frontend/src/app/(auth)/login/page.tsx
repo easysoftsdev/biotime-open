@@ -23,8 +23,9 @@ export default function LoginPage() {
     try {
       await login(email, password, totp || undefined);
       router.push("/dashboard");
-    } catch (err: any) {
-      const msg = err?.response?.data?.detail ?? "Login failed";
+    } catch (err) {
+      const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
+      const msg = typeof detail === "string" ? detail : "Login failed";
       if (msg.toLowerCase().includes("totp")) {
         setShowTotp(true);
         setError("Enter your 2FA code");

@@ -57,6 +57,11 @@ export const authApi = {
   login: (email: string, password: string, totp_code?: string) =>
     api.post("/auth/login", { email, password, totp_code }),
   me: () => api.get("/auth/me"),
+  changePassword: (current_password: string, new_password: string) =>
+    api.post("/auth/change-password", { current_password, new_password }),
+  totpSetup: () => api.post("/auth/totp/setup"),
+  totpVerify: (code: string, secret?: string) =>
+    api.post("/auth/totp/verify", { code, secret }),
 };
 
 export const devicesApi = {
@@ -85,6 +90,8 @@ export const attendanceApi = {
   live:          (limit?: number)            => api.get("/attendance/live", { params: { limit } }),
   summary:       (for_date?: string)         => api.get("/attendance/summary", { params: { for_date } }),
   manualPunch:   (data: object)              => api.post("/attendance/manual-punch", data),
+  approvePunch:  (id: string, approve: boolean, reject_reason?: string) =>
+    api.put(`/attendance/manual-punch/${id}/approve`, null, { params: { approve, reject_reason } }),
   recalculate:   (data: object)              => api.post("/attendance/recalculate", data),
 };
 
@@ -96,10 +103,15 @@ export const shiftsApi = {
   bulkRoster:  (data: object) => api.post("/shifts/rosters/bulk-assign", data),
   holidays:    ()             => api.get("/shifts/holidays"),
   addHoliday:  (data: object) => api.post("/shifts/holidays", data),
+  updateHoliday: (id: string, data: object) => api.patch(`/shifts/holidays/${id}`, data),
+  deleteHoliday: (id: string) => api.delete(`/shifts/holidays/${id}`),
 };
 
 export const leaveApi = {
   types:          ()             => api.get("/leave/types"),
+  createType:     (data: object) => api.post("/leave/types", data),
+  updateType:     (id: string, data: object) => api.patch(`/leave/types/${id}`, data),
+  deleteType:     (id: string) => api.delete(`/leave/types/${id}`),
   balances:       (params?: object) => api.get("/leave/balances", { params }),
   requests:       (params?: object) => api.get("/leave/requests", { params }),
   createRequest:  (data: object) => api.post("/leave/requests", data),
@@ -108,6 +120,9 @@ export const leaveApi = {
 
 export const payrollApi = {
   payCodes: ()             => api.get("/payroll/pay-codes"),
+  createPayCode: (data: object) => api.post("/payroll/pay-codes", data),
+  updatePayCode: (id: string, data: object) => api.patch(`/payroll/pay-codes/${id}`, data),
+  deletePayCode: (id: string) => api.delete(`/payroll/pay-codes/${id}`),
   runs:     ()             => api.get("/payroll/runs"),
   createRun:(data: object) => api.post("/payroll/runs", data),
   items:    (runId: string)=> api.get(`/payroll/runs/${runId}/items`),

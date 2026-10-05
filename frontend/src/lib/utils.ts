@@ -71,3 +71,20 @@ export function statusBg(status: string): string {
   };
   return map[status?.toLowerCase()] ?? "bg-slate-500/10 text-slate-400 border-slate-500/20";
 }
+
+export function apiErrorMessage(err: unknown, fallback = "Something went wrong"): string {
+  const anyErr = err as {
+    response?: { data?: { detail?: unknown } };
+    message?: string;
+  };
+  const detail = anyErr?.response?.data?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map((d: { msg?: string }) => d?.msg ?? JSON.stringify(d)).join(", ");
+  }
+  if (detail && typeof detail === "object" && "msg" in detail) {
+    return String((detail as { msg: string }).msg);
+  }
+  if (anyErr?.message) return anyErr.message;
+  return fallback;
+}

@@ -88,7 +88,6 @@ def generate_payroll_run(self, run_id: str):
     from core.database import AsyncSessionLocal
     from payroll.models import PayrollRun, PayrollItem, EmployeeSalary
     from sqlalchemy import select
-    from datetime import date
 
     async def _run():
         async with AsyncSessionLocal() as db:
@@ -138,7 +137,7 @@ def generate_wps_report(self, run_id: str, tenant_id: str):
     import csv
     import io
     from core.database import AsyncSessionLocal
-    from payroll.models import PayrollItem, PayrollRun, PayCode
+    from payroll.models import PayrollItem, PayCode
     from employees.models import Employee
     from sqlalchemy import select
 
@@ -198,7 +197,6 @@ def generate_wps_report(self, run_id: str, tenant_id: str):
 @celery_app.task(name="tasks.notification_tasks.send_notification", bind=True)
 def send_notification(self, recipient_email: str, subject: str, body: str):
     """Send email notification."""
-    import asyncio
     from core.config import settings
     import smtplib
     from email.mime.text import MIMEText

@@ -1,6 +1,6 @@
 """Leave management endpoints."""
 import uuid
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
@@ -35,6 +35,36 @@ async def create_leave_type(
     db.add(lt)
     await db.commit()
     return lt
+
+
+@router.patch("/types/{type_id}", response_model=schemas.LeaveTypeOut)
+async def update_leave_type(
+    type_id: uuid.UUID,
+    body: schemas.LeaveTypeCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    lt = await db.get(LeaveType, type_id)
+    if not lt or lt.tenant_id != current_user.tenant_id:
+        raise NotFoundError("Leave type not found")
+    for field, val in body.model_dump().items():
+        setattr(lt, field, val)
+    db.add(lt)
+    await db.commit()
+    return lt
+
+
+@router.delete("/types/{type_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_leave_type(
+    type_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    lt = await db.get(LeaveType, type_id)
+    if not lt or lt.tenant_id != current_user.tenant_id:
+        raise NotFoundError("Leave type not found")
+    await db.delete(lt)
+    await db.commit()
 
 
 # ─── Leave Balances ───────────────────────────────────────────

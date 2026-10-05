@@ -28,7 +28,7 @@ def retry_failed_syncs(self):
     """Re-queue WAITING_FOR_DEVICE sync commands. Runs every 5 min."""
     import asyncio
     from core.database import AsyncSessionLocal
-    from sqlalchemy import select, update
+    from sqlalchemy import select
     from devices.models import DeviceCommand, CommandStatus, DeviceStatus
     from devices.models import Device
 

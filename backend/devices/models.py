@@ -5,10 +5,12 @@ import uuid
 from enum import Enum as PyEnum
 
 from sqlalchemy import (
-    Boolean, DateTime, ForeignKey, Integer, String, Text, func,
+    Boolean, DateTime, ForeignKey, Integer, String, Text,
 )
-from sqlalchemy.dialects.postgresql import INET, JSONB, UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from datetime import datetime
 
 from core.models import BaseModel, TenantModel
 
@@ -69,10 +71,10 @@ class Device(TenantModel):
     timezone: Mapped[str]       = mapped_column(String(60), default="UTC")
     pending_sync: Mapped[bool]  = mapped_column(Boolean, default=False)
 
-    last_seen_at: Mapped[DateTime | None]            = mapped_column(DateTime(timezone=True), nullable=True)
-    last_sync_at: Mapped[DateTime | None]            = mapped_column(DateTime(timezone=True), nullable=True)
-    last_successful_sync_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    last_error_at: Mapped[DateTime | None]           = mapped_column(DateTime(timezone=True), nullable=True)
+    last_seen_at: Mapped[datetime | None]            = mapped_column(DateTime(timezone=True), nullable=True)
+    last_sync_at: Mapped[datetime | None]            = mapped_column(DateTime(timezone=True), nullable=True)
+    last_successful_sync_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_error_at: Mapped[datetime | None]           = mapped_column(DateTime(timezone=True), nullable=True)
     last_error: Mapped[str | None]                   = mapped_column(Text, nullable=True)
 
     # Relationships
@@ -109,7 +111,7 @@ class DeviceCapability(BaseModel):
     max_cards: Mapped[int]        = mapped_column(Integer, default=50000)
     max_transactions: Mapped[int] = mapped_column(Integer, default=1000000)
 
-    last_capability_sync: Mapped[DateTime | None] = mapped_column(
+    last_capability_sync: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 
@@ -132,7 +134,7 @@ class DeviceCommand(TenantModel):
     error: Mapped[str | None]  = mapped_column(Text, nullable=True)
     sync_job_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
 
-    scheduled_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    executed_at: Mapped[DateTime | None]  = mapped_column(DateTime(timezone=True), nullable=True)
+    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    executed_at: Mapped[datetime | None]  = mapped_column(DateTime(timezone=True), nullable=True)
 
     device: Mapped["Device"] = relationship(back_populates="commands")

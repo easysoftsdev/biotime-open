@@ -35,6 +35,36 @@ async def create_pay_code(
     return pc
 
 
+@router.patch("/pay-codes/{pay_code_id}", response_model=schemas.PayCodeOut)
+async def update_pay_code(
+    pay_code_id: uuid.UUID,
+    body: schemas.PayCodeCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    pc = await db.get(PayCode, pay_code_id)
+    if not pc or pc.tenant_id != current_user.tenant_id:
+        raise NotFoundError("Pay code not found")
+    for field, val in body.model_dump().items():
+        setattr(pc, field, val)
+    db.add(pc)
+    await db.commit()
+    return pc
+
+
+@router.delete("/pay-codes/{pay_code_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_pay_code(
+    pay_code_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    pc = await db.get(PayCode, pay_code_id)
+    if not pc or pc.tenant_id != current_user.tenant_id:
+        raise NotFoundError("Pay code not found")
+    await db.delete(pc)
+    await db.commit()
+
+
 @router.get("/runs", response_model=list[schemas.PayrollRunOut])
 async def list_runs(
     db: AsyncSession = Depends(get_db),

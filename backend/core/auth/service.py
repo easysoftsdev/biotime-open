@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.auth.models import User, UserRole
-from core.exceptions import NotFoundError, UnauthorizedError
+from core.exceptions import UnauthorizedError
 from core.security import hash_password, verify_password
 
 

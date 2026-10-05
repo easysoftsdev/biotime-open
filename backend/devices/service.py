@@ -9,10 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from core.config import settings
-from core.exceptions import NotFoundError
 from devices.models import (
     Device, DeviceCapability, DeviceCommand, DeviceModel,
-    DeviceStatus, CommandStatus, CommandType,
+    DeviceStatus, CommandStatus,
 )
 
 
@@ -141,10 +140,13 @@ async def resolve_capabilities(
 
     caps_data = device_model.default_capabilities if device_model else {}
 
-    # Upsert capability record
-    if device.capabilities:
-        cap = device.capabilities
-    else:
+    # Upsert capability record (explicit SELECT — lazy loading is not
+    # available in the async session outside of an await)
+    cap_result = await db.execute(
+        select(DeviceCapability).where(DeviceCapability.device_id == device.id)
+    )
+    cap = cap_result.scalar_one_or_none()
+    if cap is None:
         cap = DeviceCapability(device_id=device.id)
 
     cap.protocol = "push_sdk" if (device_model and device_model.push_sdk_supported) else "adms"

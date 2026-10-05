@@ -4,10 +4,11 @@ FastAPI dependency injection — current user, tenant, DB session.
 import uuid
 from typing import Annotated
 
-from fastapi import Depends, Header
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.auth.models import User
 from core.database import get_db
 from core.exceptions import UnauthorizedError, ForbiddenError
 from core.security import decode_token
@@ -54,5 +55,5 @@ async def require_roles(*roles: str):
 
 
 # ─── Typed shortcuts ──────────────────────────────────────────
-CurrentUser = Annotated[object, Depends(get_current_user)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
 DBSession = Annotated[AsyncSession, Depends(get_db)]

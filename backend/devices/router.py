@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
-from core.deps import CurrentUser, get_current_user
+from core.deps import get_current_user
 from core.exceptions import NotFoundError
 from devices import schemas, service
 from devices.models import CommandType

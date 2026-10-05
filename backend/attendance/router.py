@@ -6,10 +6,8 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from attendance import schemas, service
-from attendance.engine import recalculate_range
 from core.database import get_db
 from core.deps import get_current_user
-from core.exceptions import NotFoundError
 
 router = APIRouter()
 

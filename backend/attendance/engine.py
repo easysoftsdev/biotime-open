@@ -11,9 +11,8 @@ Flow:
 """
 import uuid
 from datetime import date, datetime, timedelta, timezone
-from typing import Optional
 
-from sqlalchemy import select, and_
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -115,8 +114,6 @@ async def _calculate_daily_record(
         # Cross-midnight shift
         if shift.cross_day and shift.end_time < shift.start_time:
             shift_end += timedelta(days=1)
-
-        shift_duration = int((shift_end - shift_start).total_seconds() / 60)
 
         # Late arrival
         grace = policy.late_grace_minutes if policy else 0
