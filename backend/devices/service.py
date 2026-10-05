@@ -80,7 +80,7 @@ async def create_device(
 
 async def update_device_heartbeat(db: AsyncSession, device: Device) -> None:
     device.last_seen_at = utcnow()
-    if device.status == DeviceStatus.OFFLINE:
+    if device.status in (DeviceStatus.UNKNOWN, DeviceStatus.OFFLINE):
         device.status = DeviceStatus.ONLINE
     db.add(device)
     await db.flush()
